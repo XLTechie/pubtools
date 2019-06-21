@@ -19,6 +19,7 @@
 # This script took initial inspiration from an article written by Grant Winney, at <https://grantwinney.com/5-things-you-can-do-with-a-locally-cloned-github-wiki/>.
 #
 # Changelog:
+# V2.2 (6/21/2019): Added ability to configure the internal link preface text.
 # V2.1 (6/21/2019): Added ability to generate lists which follow the four-space rule.
 # V2.0 (6/20/2019): Switched from generating an HTML TOC to a Markdown TOC by default.
 # V1.0 (6/5/2019): initial stable release.
@@ -61,7 +62,13 @@ my $tocHeader = "\n# **TABLE OF CONTENTS**\n\n*A note to screen reader users:* t
 my $linkType = 0;
 
 # If you want list indentation to follow the four-space rule, set to 1. Otherwise 0 for the two-space rule.
+# Note that Github is fine with either; but Python's Markdown libraries follow the four-space rule
 my $fourSpaceRule = 1;
+
+# Some converters (programs that convert Markdown to HTML) put extra text in the ID tags of generated H1...H6 elements.
+# For example, if a heading is called "Introduction", Github's preprocessor will provide an ID tag of "user-content-introduction" for that header.
+# If your preprocessor of choice does this, set the text here.
+my $relativeLinkPreface = "user-content-"; # Set for Github by default
 
 # The script will search for this line when deciding where to place the TOC.
 # If it finds it, it will place the TOC after it; otherwise it will place it at the very top and insert this line above it.
@@ -71,7 +78,7 @@ my $tocPlaceholder = "[//]: # (Place this line where you want the table of conte
 # These are comments used by the script to find a previously generated TOC.
 # They are hidden from people viewing the parsed version of the markdown.
 # Don't change these unless you really understand the markdown syntax!
-my $tocBegin = "[Table Of Contents]: <#user-content-table-of-contents> (TOC)\n";
+my $tocBegin = "[Table Of Contents]: <#" . $relativeLinkPreface . "table-of-contents> (TOC)\n";
 my $tocEnd = "[//]: # (End of TOC)\n";
 
 ### END OF CONFIGURATION ###
@@ -226,9 +233,9 @@ my $link = $_[0];
 my $text = $_[1];
 
 if ($linkType == 1) { # HTML
-    return "<a href=\"#user-content-$link\">$text</a>\n";
+    return "<a href=\"#$relativeLinkPreface$link\">$text</a>\n";
 } else { # Markdown
-    return "[$text](#user-content-$link)\n";
+    return "[$text](#$relativeLinkPreface$link)\n";
 }
 }
 
