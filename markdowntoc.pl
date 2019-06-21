@@ -2,7 +2,7 @@
 #
 # markdowntoc V1.0
 #
-# Makes headings in a markdown document into a table of contents at the top (or, optionally, somewhere else).
+# Makes headings in a markdown document into a Markdown table of contents at the top (or, optionally, somewhere else).
 # Intended for use with Github wikis.
 # Before use, make adjustments in the CONFIGURATION section.
 # See also the THINGS TO KNOW section.
@@ -19,6 +19,7 @@
 # This script took initial inspiration from an article written by Grant Winney, at <https://grantwinney.com/5-things-you-can-do-with-a-locally-cloned-github-wiki/>.
 #
 # Changelog:
+# V2.0: Switched from generating an HTML TOC to a Markdown TOC.
 # V1.0: initial stable release (6/5/2019)
 
 ### THINGS TO KNOW ###
@@ -52,7 +53,11 @@ my $collapseLevels = 1; # Default should be 0 for no collapsing
 my $startWithLevel = 2; # Default should be 1 to include all heading levels starting at H1
 
 # The markdown header placed at the start of your TOC--this is intended to be visible to users.
-my $tocHeader = "\n# **TABLE OF CONTENTS**\n\n";
+my $tocHeader = "\n# **TABLE OF CONTENTS**\n\n*A note to screen reader users:* to return to this table of contents, use your heading level 1 browse mode command in the reverse direction.\n\n";
+
+# If you want HTML links (The default before V2.0), set to 1.
+# If you prefer Markdown links, set to 0 (the default starting at V2.0).
+my $linkType = 0;
 
 # The script will search for this line when deciding where to place the TOC.
 # If it finds it, it will place the TOC after it; otherwise it will place it at the very top and insert this line above it.
@@ -81,6 +86,10 @@ if ($startWithLevel <= 0) {
 
 if ($collapseLevels < 0) {
     $collapseLevels = 0;
+}
+
+if ($linkType != 1) {
+    $linkType = 0;
 }
 
 # Process command line files
@@ -196,7 +205,18 @@ sub createLink {
         $indent = 0;
     }
 
-    return " " x (($indent-1)*2) . "- " . "<a href=\"#user-content-$link\">$text</a>\n";
+    return " " x (($indent-1)*2) . "- " . generateLinkOfType($link, $text);
+}
+
+sub generateLinkOfType {
+my $link = $_[0];
+my $text = $_[1];
+
+if ($linkType == 1) { # HTML
+    return "<a href=\"#user-content-$link\">$text</a>\n";
+} else { # Markdown
+    return "[$text](#user-content-$link)\n";
+}
 }
 
 # Returns a string containing the HTML TOC
