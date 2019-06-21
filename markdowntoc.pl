@@ -19,8 +19,9 @@
 # This script took initial inspiration from an article written by Grant Winney, at <https://grantwinney.com/5-things-you-can-do-with-a-locally-cloned-github-wiki/>.
 #
 # Changelog:
-# V2.0: Switched from generating an HTML TOC to a Markdown TOC.
-# V1.0: initial stable release (6/5/2019)
+# V2.1 (6/21/2019): Added ability to generate lists which follow the four-space rule.
+# V2.0 (6/20/2019): Switched from generating an HTML TOC to a Markdown TOC by default.
+# V1.0 (6/5/2019): initial stable release.
 
 ### THINGS TO KNOW ###
 
@@ -59,6 +60,9 @@ my $tocHeader = "\n# **TABLE OF CONTENTS**\n\n*A note to screen reader users:* t
 # If you prefer Markdown links, set to 0 (the default starting at V2.0).
 my $linkType = 0;
 
+# If you want list indentation to follow the four-space rule, set to 1. Otherwise 0 for the two-space rule.
+my $fourSpaceRule = 1;
+
 # The script will search for this line when deciding where to place the TOC.
 # If it finds it, it will place the TOC after it; otherwise it will place it at the very top and insert this line above it.
 # Don't change this unless you really understand the markdown syntax!
@@ -90,6 +94,10 @@ if ($collapseLevels < 0) {
 
 if ($linkType != 1) {
     $linkType = 0;
+}
+
+if ($fourSpaceRule < 0 or $fourSpaceRule > 1) {
+    $fourSpaceRule = 0;
 }
 
 # Process command line files
@@ -190,13 +198,14 @@ sub createLink {
     my $currentLine = $_[0];
     my $indent = $_[1];
     my $collapseLevels = $_[2];
+    my $multiplier = 2;
 
     my $text = substr($currentLine, $indent);
 
     $text =~ s/^\s+|\s+$//g; # Strip spaces from either end
     
-    my $link = lc $text =~ s/[,\[\]\;:\/\?\"\'\*\+\.]+//gr; # Remove undesirable punctuation
-    $link =~ s/ /-/g;
+    my $link = lc $text =~ s/[,\[\]\;:\/\?\"\'\*\+\.]+//gr; # Make lower case & remove undesirable punctuation
+    $link =~ s/ /-/g; # Convert spaces to dashes
 
     if ($collapseLevels > 0) {
         $indent = $indent - $collapseLevels;
@@ -205,7 +214,11 @@ sub createLink {
         $indent = 0;
     }
 
-    return " " x (($indent-1)*2) . "- " . generateLinkOfType($link, $text);
+    if ($fourSpaceRule == 1) {
+        $multiplier = 4; # It's 2 by default
+    }
+    
+    return " " x (($indent-1) * $multiplier) . "- " . generateLinkOfType($link, $text);
 }
 
 sub generateLinkOfType {
