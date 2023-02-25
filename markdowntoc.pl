@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# markdowntoc V1.0
+# markdowntoc V2.2
 #
 # Makes headings in a markdown document into a Markdown table of contents at the top (or, optionally, somewhere else).
 # Intended for use with Github wikis.
